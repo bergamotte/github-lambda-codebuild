@@ -10,18 +10,20 @@ const branchEnvironments = {
   'staging': 'staging'
 }
 
+const reviewEnvironmentBranches = ['reviewenvironment']
+
 exports.handler = (event, context, callback) => {
   if(event.Records) {
     const message = JSON.parse(event.Records[0].Sns.Message)
 
     if(message && message.after) {
       // Message from GitHub, building
-      const branch = message.ref.split('/').slice(-1)[0]
+      const branch = message.ref.replace('refs/heads/','')
 
       if(branchesToExclude.includes(branch)) return console.log(`Not building ${branch}, exiting.`)
       if(message.deleted) return console.log('Branch deleted, exiting.')
 
-      build.run(message.after, branchEnvironments[branch], message.pusher.name)
+      build.run(message.after, branchEnvironments[branch], message.pusher.name, branch, buildReviewEnvironment(branch))
         .then(resp => {
           callback(null, resp)
         })
@@ -51,4 +53,8 @@ exports.handler = (event, context, callback) => {
         callback(err)
       })
   }
+}
+
+const buildReviewEnvironment = (branch) => {
+  return reviewEnvironmentBranches.includes(branch)
 }
