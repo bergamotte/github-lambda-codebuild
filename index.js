@@ -58,6 +58,13 @@ exports.handler = (event, context, callback) => {
 }
 
 const buildReviewEnvironment = (branch, commitMessage) => {
+  if(checkReviewEnvironmentBranchName(branch)) return false
   if(reviewEnvironmentBranchesToExclude.includes(branch)) return false
   return commitMessage.includes(reviewEnvironmentTrigger)
+}
+
+const checkReviewEnvironmentBranchName = (branch) => {
+  // NOTE: The branch name has to be FQDN compatible for letsencrypt so check that here
+  const invalidReviewEnvironmentBranchChars = ['_', '/']
+  return invalidReviewEnvironmentBranchChars.some( function(char) { return branch.includes(char) })
 }
