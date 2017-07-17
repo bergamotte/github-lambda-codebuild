@@ -9,21 +9,23 @@ const branchEnvironments = {
   'master': 'production',
   'staging': 'staging'
 }
-
-const reviewEnvironmentBranches = ['reviewenvironment']
+const reviewEnvironmentBranchesToExclude = ['staging', 'master']
+const reviewEnvironmentTrigger = '[review]'
 
 exports.handler = (event, context, callback) => {
   if(event.Records) {
-    const message = JSON.parse(event.Records[0].Sns.Message)
+    const message = JSON.parse(event.Records[0].Sns.
+      Message)
 
     if(message && message.after) {
       // Message from GitHub, building
       const branch = message.ref.replace('refs/heads/','')
+      const commitMessage = message.head_commit.message
 
       if(branchesToExclude.includes(branch)) return console.log(`Not building ${branch}, exiting.`)
       if(message.deleted) return console.log('Branch deleted, exiting.')
 
-      build.run(message.after, branchEnvironments[branch], message.pusher.name, branch, buildReviewEnvironment(branch))
+      build.run(message.after, branchEnvironments[branch], message.pusher.name, branch, buildReviewEnvironment(branch, commitMessage))
         .then(resp => {
           callback(null, resp)
         })
@@ -55,6 +57,7 @@ exports.handler = (event, context, callback) => {
   }
 }
 
-const buildReviewEnvironment = (branch) => {
-  return reviewEnvironmentBranches.includes(branch)
+const buildReviewEnvironment = (branch, commitMessage) => {
+  if(reviewEnvironmentBranchesToExclude.includes(branch)) return false
+  return commitMessage.includes(reviewEnvironmentTrigger)
 }
