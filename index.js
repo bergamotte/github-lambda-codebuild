@@ -9,19 +9,23 @@ const branchEnvironments = {
   'master': 'production',
   'staging': 'staging'
 }
+const reviewEnvironmentBranchesToExclude = ['staging', 'master']
+const reviewEnvironmentTrigger = '[review]'
 
 exports.handler = (event, context, callback) => {
   if(event.Records) {
-    const message = JSON.parse(event.Records[0].Sns.Message)
+    const message = JSON.parse(event.Records[0].Sns.
+      Message)
 
     if(message && message.after) {
       // Message from GitHub, building
-      const branch = message.ref.split('/').slice(-1)[0]
+      const branch = message.ref.replace('refs/heads/','')
+      const commitMessage = message.head_commit.message
 
       if(branchesToExclude.includes(branch)) return console.log(`Not building ${branch}, exiting.`)
       if(message.deleted) return console.log('Branch deleted, exiting.')
 
-      build.run(message.after, branchEnvironments[branch], message.pusher.name)
+      build.run(message.after, branchEnvironments[branch], message.pusher.name, branch, buildReviewEnvironment(branch, commitMessage))
         .then(resp => {
           callback(null, resp)
         })
@@ -51,4 +55,16 @@ exports.handler = (event, context, callback) => {
         callback(err)
       })
   }
+}
+
+const buildReviewEnvironment = (branch, commitMessage) => {
+  if(checkReviewEnvironmentBranchName(branch)) return false
+  if(reviewEnvironmentBranchesToExclude.includes(branch)) return false
+  return commitMessage.includes(reviewEnvironmentTrigger)
+}
+
+const checkReviewEnvironmentBranchName = (branch) => {
+  // NOTE: The branch name has to be FQDN compatible for letsencrypt so check that here
+  const invalidReviewEnvironmentBranchChars = ['_', '/']
+  return invalidReviewEnvironmentBranchChars.some( function(char) { return branch.includes(char) })
 }

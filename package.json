@@ -14,6 +14,6 @@
     "dotenv": "^4.0.0",
     "octonode": "0.7.12",
     "promise-retry": "1.1.1",
-    "slack-node": "^0.1.8"
+    "slack-node": "simonrand/slack-node-sdk#allow_unfurl_options"
   }
 }
