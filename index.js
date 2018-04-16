@@ -18,12 +18,13 @@ exports.handler = (event, context, callback) => {
       Message)
 
     if(message && message.after) {
+      if(message.deleted) return console.log('Branch deleted, exiting.')
+
       // Message from GitHub, building
       const branch = message.ref.replace('refs/heads/','')
       const commitMessage = message.head_commit.message
 
       if(branchesToExclude.includes(branch)) return console.log(`Not building ${branch}, exiting.`)
-      if(message.deleted) return console.log('Branch deleted, exiting.')
 
       build.run(message.after, branchEnvironments[branch], message.pusher.name, branch, buildReviewEnvironment(branch, commitMessage))
         .then(resp => {
