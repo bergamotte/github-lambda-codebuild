@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "aws-sdk": "2.49.0",
+    "aws-sdk": "2.263.1",
     "dotenv": "^4.0.0",
     "octonode": "0.7.12",
     "promise-retry": "1.1.1",
