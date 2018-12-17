@@ -4,7 +4,7 @@ const build = require('./lib/build')
 const rebuild = require('./lib/rebuild')
 const report = require('./lib/report')
 
-const branchesToExclude = []
+const branchesToExclude = ['staging', 'master']
 const branchEnvironments = {
   'master': 'production',
   'staging': 'staging'
@@ -13,9 +13,7 @@ const reviewEnvironmentBranchesToExclude = ['staging', 'master']
 const reviewEnvironmentTrigger = '[review]'
 
 exports.handler = (event, context, callback) => {
-  if(event.Records) {
-    const message = JSON.parse(event.Records[0].Sns.
-      Message)
+    const message = JSON.parse(event)
 
     if(message && message.after) {
       if(message.deleted) return console.log('Branch deleted, exiting.')
@@ -33,29 +31,7 @@ exports.handler = (event, context, callback) => {
         .catch(err => {
           callback(err, null)
         })
-    } else {
-      // Message from CodeBuild, reporting
-      report.run(message.buildId)
-        .then(resp => {
-          callback(null, resp);
-        })
-        .catch(err => {
-          callback(err, null);
-        })
     }
-  } else if (event.buildId) {
-    // From API Gateway
-    rebuild.run(event.key, event.buildId)
-      .then(resp => {
-        callback(null, {
-          statusCode: 302,
-          location: resp.target_url
-        })
-      })
-      .catch(err => {
-        callback(err)
-      })
-  }
 }
 
 const buildReviewEnvironment = (branch, commitMessage) => {
