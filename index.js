@@ -23,16 +23,17 @@ exports.handler = (event, context, callback) => {
           })
         })
         .catch(err => {
-          callback(err)
+          callback(null, {
+            statusCode: 500
+          })
         })
     } else {
       // From Github
-      const message = event;
+      const message = JSON.parse(event.body);
 
       if(message && message.after) {
         if(message.deleted) return console.log('Branch deleted, exiting.')
 
-        // Message from GitHub, building
         const branch = message.ref.replace('refs/heads/','')
         const commitMessage = message.head_commit.message
 
