@@ -13,24 +13,39 @@ const reviewEnvironmentBranchesToExclude = ['staging', 'master']
 const reviewEnvironmentTrigger = '[review]'
 
 exports.handler = (event, context, callback) => {
-    const message = JSON.parse(event)
-
-    if(message && message.after) {
-      if(message.deleted) return console.log('Branch deleted, exiting.')
-
-      // Message from GitHub, building
-      const branch = message.ref.replace('refs/heads/','')
-      const commitMessage = message.head_commit.message
-
-      if(branchesToExclude.includes(branch)) return console.log(`Not building ${branch}, exiting.`)
-
-      build.run(message.after, branchEnvironments[branch], message.pusher.name, branch, buildReviewEnvironment(branch, commitMessage))
+    if (event.buildId) {
+      // Rebuild from Slack
+      rebuild.run(event.key, event.buildId)
         .then(resp => {
-          callback(null, resp)
+          callback(null, {
+            statusCode: 302,
+            location: resp.target_url
+          })
         })
         .catch(err => {
-          callback(err, null)
+          callback(err)
         })
+    } else {
+      // From Github
+      const message = event;
+
+      if(message && message.after) {
+        if(message.deleted) return console.log('Branch deleted, exiting.')
+
+        // Message from GitHub, building
+        const branch = message.ref.replace('refs/heads/','')
+        const commitMessage = message.head_commit.message
+
+        if(branchesToExclude.includes(branch)) return console.log(`Not building ${branch}, exiting.`)
+
+        build.run(message.after, branchEnvironments[branch], message.pusher.name, branch, buildReviewEnvironment(branch, commitMessage))
+          .then(resp => {
+            callback(null, resp)
+          })
+          .catch(err => {
+            callback(err, null)
+          })
+      }
     }
 }
 
