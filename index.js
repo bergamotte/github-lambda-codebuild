@@ -13,9 +13,10 @@ const reviewEnvironmentBranchesToExclude = ['staging', 'master']
 const reviewEnvironmentTrigger = '[review]'
 
 exports.handler = (event, context, callback) => {
-  if (event.codebuildId) {
+  if (event.Records) {
+    const message = JSON.parse(event.Records[0].Sns.Message)
     // Message from SNS CodeBuild, reporting stuff
-    report.run(event.codebuildId)
+    report.run(message.codebuildId)
       .then(resp => {
         callback(null, resp);
       })
