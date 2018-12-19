@@ -13,7 +13,16 @@ const reviewEnvironmentBranchesToExclude = ['staging', 'master']
 const reviewEnvironmentTrigger = '[review]'
 
 exports.handler = (event, context, callback) => {
-    if (event.buildId) {
+  if (event.codebuildId) {
+    // Message from SNS CodeBuild, reporting stuff
+    report.run(event.codebuildId)
+      .then(resp => {
+        callback(null, resp);
+      })
+      .catch(err => {
+        callback(err, null);
+      })
+  } else if (event.buildId) {
       // Rebuild from Slack
       rebuild.run(event.key, event.buildId)
         .then(resp => {
