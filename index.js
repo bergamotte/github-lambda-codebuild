@@ -41,10 +41,10 @@ exports.handler = (event, context, callback) => {
 
         build.run(message.after, branchEnvironments[branch], message.pusher.name, branch, buildReviewEnvironment(branch, commitMessage))
           .then(resp => {
-            callback(null, resp)
+            callback(null, {"statusCode": 200, "body": JSON.stringify(resp)})
           })
           .catch(err => {
-            callback(err, null)
+            callback(new Error("build wasn't triggered"))
           })
       }
     }
