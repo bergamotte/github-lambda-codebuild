@@ -4,12 +4,12 @@ const build = require('./lib/build')
 const rebuild = require('./lib/rebuild')
 const report = require('./lib/report')
 
-const branchesToExclude = ['staging', 'master']
+const branchesToExclude = []
 const branchEnvironments = {
   'master': 'production',
   'staging': 'staging'
 }
-const reviewEnvironmentBranchesToExclude = []
+const reviewEnvironmentBranchesToExclude = ['staging', 'master']
 const reviewEnvironmentTrigger = '[review]'
 
 exports.handler = (event, context, callback) => {
