@@ -9,7 +9,7 @@ const branchEnvironments = {
   'master': 'production',
   'staging': 'staging'
 }
-const reviewEnvironmentBranchesToExclude = ['staging', 'master']
+const reviewEnvironmentBranchesToExclude = []
 const reviewEnvironmentTrigger = '[review]'
 
 exports.handler = (event, context, callback) => {
