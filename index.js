@@ -16,7 +16,7 @@ exports.handler = (event, context, callback) => {
   if (event.Records) {
     const message = JSON.parse(event.Records[0].Sns.Message)
     // Message from SNS CodeBuild, reporting stuff
-    report.run(message.codebuildId)
+    report.run(message.buildId)
       .then(resp => {
         callback(null, resp);
       })
