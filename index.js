@@ -41,15 +41,15 @@ exports.handler = (event, context, callback) => {
       // From Github
       const message = JSON.parse(event.body);
 
-      if(message.pull_request) {
+      if(message && message.pull_request) {
         // payload is from pr events
         if (message.action == "opened" || message.action == "reopened") {
           // only build for pr opened and reopened events
-          const branch = message.head.ref
+          const branch = message.pull_request.head.ref
 
           if(branchesToExclude.includes(branch)) return console.log(`Not building ${branch}, exiting.`)
 
-          build.run(message.head.sha, branchEnvironments[branch], message.pull_request.user.login, branch, false)
+          build.run(message.pull_request.head.sha, branchEnvironments[branch], message.pull_request.user.login, branch, false)
             .then(resp => {
               callback(null, {"statusCode": 200, "body": JSON.stringify(resp)})
             })
