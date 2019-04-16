@@ -47,7 +47,7 @@ exports.handler = (event, context, callback) => {
           // only build for pr opened and reopened events
           var branch = message.pull_request.head.ref
 
-          if(branchesToExclude.includes(branch)) return console.log('Not building ${branch}, exiting.')
+          if(branchesToExclude.includes(branch)) return console.log(`Not building ${branch}, exiting.`)
           if(branch == "staging") return console.log('Not triggering for staging')
 
           build.run(message.pull_request.head.sha, branchEnvironments[branch], message.pull_request.user.login, branch, false)
@@ -65,7 +65,7 @@ exports.handler = (event, context, callback) => {
           var branch = message.ref.replace('refs/heads/','')
           var commitMessage = message.head_commit.message
 
-          if(branchesToExclude.includes(branch)) return console.log('Not building ${branch}, exiting.'')
+          if(branchesToExclude.includes(branch)) return console.log(`Not building ${branch}, exiting.`)
 
           build.run(message.after, branchEnvironments[branch], message.pusher.name, branch, buildReviewEnvironment(branch, commitMessage))
             .then(resp => {
