@@ -57,8 +57,7 @@ exports.handler = (event, context, callback) => {
               callback(new Error("build wasn't triggered"))
             })
         }
-      } else {
-        if(message && message.after) {
+      } else if(message && message.after) {
           // payload is from push events
           if(message.deleted) return console.log('Branch deleted, exiting.')
 
