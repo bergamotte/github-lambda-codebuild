@@ -45,7 +45,7 @@ exports.handler = (event, context, callback) => {
         // payload is from pr events
         if (message.action == "opened" || message.action == "reopened") {
           // only build for pr opened and reopened events
-          const branch = message.pull_request.head.ref
+          var branch = message.pull_request.head.ref
 
           if(branchesToExclude.includes(branch)) return console.log(`Not building ${branch}, exiting.`)
 
@@ -57,12 +57,13 @@ exports.handler = (event, context, callback) => {
               callback(new Error("build wasn't triggered"))
             })
         }
-      } else if(message && message.after) {
+      } else {
+        if(message && message.after) {
           // payload is from push events
           if(message.deleted) return console.log('Branch deleted, exiting.')
 
-          const branch = message.ref.replace('refs/heads/','')
-          const commitMessage = message.head_commit.message
+          var branch = message.ref.replace('refs/heads/','')
+          var commitMessage = message.head_commit.message
 
           if(branchesToExclude.includes(branch)) return console.log(`Not building ${branch}, exiting.`)
 
