@@ -41,21 +41,39 @@ exports.handler = (event, context, callback) => {
       // From Github
       const message = JSON.parse(event.body);
 
-      if(message && message.after) {
-        if(message.deleted) return console.log('Branch deleted, exiting.')
+      if(message && message.pull_request) {
+        // payload is from pr events
+        if (message.action == "opened" || message.action == "reopened") {
+          // only build for pr opened and reopened events
+          const branch = message.pull_request.head.ref
 
-        const branch = message.ref.replace('refs/heads/','')
-        const commitMessage = message.head_commit.message
+          if(branchesToExclude.includes(branch)) return console.log(`Not building ${branch}, exiting.`)
 
-        if(branchesToExclude.includes(branch)) return console.log(`Not building ${branch}, exiting.`)
+          build.run(message.pull_request.head.sha, branchEnvironments[branch], message.pull_request.user.login, branch, false)
+            .then(resp => {
+              callback(null, {"statusCode": 200, "body": JSON.stringify(resp)})
+            })
+            .catch(err => {
+              callback(new Error("build wasn't triggered"))
+            })
+        }
+      } else if(message && message.after) {
+          // payload is from push events
+          if(message.deleted) return console.log('Branch deleted, exiting.')
 
-        build.run(message.after, branchEnvironments[branch], message.pusher.name, branch, buildReviewEnvironment(branch, commitMessage))
-          .then(resp => {
-            callback(null, {"statusCode": 200, "body": JSON.stringify(resp)})
-          })
-          .catch(err => {
-            callback(new Error("build wasn't triggered"))
-          })
+          const branch = message.ref.replace('refs/heads/','')
+          const commitMessage = message.head_commit.message
+
+          if(branchesToExclude.includes(branch)) return console.log(`Not building ${branch}, exiting.`)
+
+          build.run(message.after, branchEnvironments[branch], message.pusher.name, branch, buildReviewEnvironment(branch, commitMessage))
+            .then(resp => {
+              callback(null, {"statusCode": 200, "body": JSON.stringify(resp)})
+            })
+            .catch(err => {
+              callback(new Error("build wasn't triggered"))
+            })
+        }
       }
     }
 }
