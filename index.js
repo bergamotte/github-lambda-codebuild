@@ -59,7 +59,7 @@ exports.handler = (event, context, callback) => {
         }
       } else {
         if(message && message.after) {
-          // paybload is from push events
+          // payload is from push events
           if(message.deleted) return console.log('Branch deleted, exiting.')
 
           const branch = message.ref.replace('refs/heads/','')
