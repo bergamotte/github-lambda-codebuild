@@ -48,6 +48,7 @@ exports.handler = (event, context, callback) => {
           var branch = message.pull_request.head.ref
 
           if(branchesToExclude.includes(branch)) return console.log(`Not building ${branch}, exiting.`)
+          if(branch == "staging") return console.log('Not triggering for staging')
 
           build.run(message.pull_request.head.sha, branchEnvironments[branch], message.pull_request.user.login, branch, false)
             .then(resp => {
@@ -57,8 +58,7 @@ exports.handler = (event, context, callback) => {
               callback(new Error("build wasn't triggered"))
             })
         }
-      } else {
-        if(message && message.after) {
+      } else if(message && message.after) {
           // payload is from push events
           if(message.deleted) return console.log('Branch deleted, exiting.')
 
@@ -74,7 +74,6 @@ exports.handler = (event, context, callback) => {
             .catch(err => {
               callback(new Error("build wasn't triggered"))
             })
-        }
       }
     }
 }
